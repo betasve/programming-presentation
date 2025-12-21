@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	windowWidth  = 1280
-	windowHeight = 720
+	windowWidth  = 1910
+	windowHeight = 1020
 	windowTitle  = "Presentation"
 )
 
@@ -69,7 +69,7 @@ func (s *BlankScreen) Draw() {
 	rl.DrawText(s.label, x, int32(y), 40, rl.White)
 
 	// Draw navigation hints
-	hints := "Arrow Keys: Navigate | F: Fullscreen | ESC: Exit"
+	hints := "Arrow Keys: Navigate | ESC: Exit"
 	hintsWidth := rl.MeasureText(hints, 20)
 	rl.DrawText(hints, (windowWidth-hintsWidth)/2, windowHeight-60, 20, rl.LightGray)
 }
