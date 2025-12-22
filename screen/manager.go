@@ -2,8 +2,10 @@ package screen
 
 // Manager handles screen navigation and lifecycle.
 type Manager struct {
-	screens      []Screen
-	currentIndex int
+	screens            []Screen
+	currentIndex       int
+	lastTransitionTime float64
+	currentTime        float64
 }
 
 // NewManager creates a new screen manager.
@@ -36,6 +38,7 @@ func (m *Manager) Next() {
 		m.screens[m.currentIndex].Unload()
 		m.currentIndex++
 		m.screens[m.currentIndex].Load()
+		m.lastTransitionTime = m.currentTime
 	}
 }
 
@@ -48,6 +51,7 @@ func (m *Manager) Previous() {
 		m.screens[m.currentIndex].Unload()
 		m.currentIndex--
 		m.screens[m.currentIndex].Load()
+		m.lastTransitionTime = m.currentTime
 	}
 }
 
@@ -60,6 +64,7 @@ func (m *Manager) GoTo(index int) {
 		m.screens[m.currentIndex].Unload()
 		m.currentIndex = index
 		m.screens[m.currentIndex].Load()
+		m.lastTransitionTime = m.currentTime
 	}
 }
 
@@ -73,10 +78,21 @@ func (m *Manager) CurrentIndex() int {
 	return m.currentIndex
 }
 
+// SetTime updates the current time (call this each frame with rl.GetTime()).
+func (m *Manager) SetTime(t float64) {
+	m.currentTime = t
+}
+
+// ShouldShowOverlay returns true if the overlay UI should be visible.
+func (m *Manager) ShouldShowOverlay(duration float64) bool {
+	return m.currentTime-m.lastTransitionTime < duration
+}
+
 // Start initializes the presentation by loading the first screen.
 func (m *Manager) Start() {
 	if len(m.screens) > 0 {
 		m.screens[0].Load()
+		m.lastTransitionTime = m.currentTime
 	}
 }
 
