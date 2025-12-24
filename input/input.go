@@ -8,8 +8,8 @@ import (
 
 // Handle processes input and updates the screen manager accordingly.
 func Handle(m *screen.Manager) {
-	// Navigation: Next slide
-	if rl.IsKeyPressed(rl.KeyRight) || rl.IsKeyPressed(rl.KeySpace) || rl.IsKeyPressed(rl.KeyEnter) {
+	// Navigation: Next slide (Enter reserved for screen actions)
+	if rl.IsKeyPressed(rl.KeyRight) || rl.IsKeyPressed(rl.KeySpace) {
 		m.Next()
 	}
 

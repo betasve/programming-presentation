@@ -23,7 +23,8 @@ func main() {
 
 	manager := screen.NewManager()
 
-	// Add sample screens for testing
+	// Add screens
+	manager.Add(&InitialScreen{backgroundPath: "assets/bg.png"})
 	manager.Add(&BlankScreen{color: rl.DarkGray, label: "Slide 1 - Press Right Arrow or Space"})
 	manager.Add(&BlankScreen{color: rl.DarkBlue, label: "Slide 2"})
 	manager.Add(&BlankScreen{color: rl.DarkGreen, label: "Slide 3"})
@@ -53,6 +54,87 @@ func main() {
 		}
 
 		rl.EndDrawing()
+	}
+}
+
+// InitialScreen displays a background image.
+type InitialScreen struct {
+	backgroundPath    string
+	background        rl.Texture2D
+	pcTextures        [4]rl.Texture2D
+	showPC            bool
+	animatingPC       bool
+	fadeStart         float64
+	fadeDuration      float64
+	frameAnimStart    float64
+	frameDuration     float64
+}
+
+func (s *InitialScreen) Load() {
+	s.background = rl.LoadTexture(s.backgroundPath)
+	s.pcTextures[0] = rl.LoadTexture("assets/pc/pc0.png")
+	s.pcTextures[1] = rl.LoadTexture("assets/pc/pc1.png")
+	s.pcTextures[2] = rl.LoadTexture("assets/pc/pc2.png")
+	s.pcTextures[3] = rl.LoadTexture("assets/pc/pc3.png")
+	s.showPC = false
+	s.animatingPC = false
+	s.fadeDuration = 1.0   // 1 second fade-in
+	s.frameDuration = 0.25 // 0.25 seconds per frame
+}
+
+func (s *InitialScreen) Unload() {
+	rl.UnloadTexture(s.background)
+	for i := 0; i < 4; i++ {
+		rl.UnloadTexture(s.pcTextures[i])
+	}
+}
+
+func (s *InitialScreen) Update() screen.Screen {
+	if rl.IsKeyPressed(rl.KeyEnter) {
+		if !s.showPC {
+			// First Enter: start fade-in
+			s.showPC = true
+			s.fadeStart = rl.GetTime()
+		} else if !s.animatingPC {
+			// Second Enter: start frame animation
+			s.animatingPC = true
+			s.frameAnimStart = rl.GetTime()
+		}
+	}
+	return nil
+}
+
+func (s *InitialScreen) Draw() {
+	// Scale texture to cover entire screen
+	src := rl.Rectangle{X: 0, Y: 0, Width: float32(s.background.Width), Height: float32(s.background.Height)}
+	dst := rl.Rectangle{X: 0, Y: 0, Width: float32(windowWidth), Height: float32(windowHeight)}
+	rl.DrawTexturePro(s.background, src, dst, rl.Vector2{X: 0, Y: 0}, 0, rl.White)
+
+	if s.showPC {
+		// Calculate fade alpha
+		fadeElapsed := rl.GetTime() - s.fadeStart
+		fadeProgress := fadeElapsed / s.fadeDuration
+		if fadeProgress > 1.0 {
+			fadeProgress = 1.0
+		}
+		alpha := uint8(fadeProgress * 255)
+
+		// Determine which frame to show
+		frameIndex := 0
+		if s.animatingPC {
+			elapsed := rl.GetTime() - s.frameAnimStart
+			cycleTime := 4 * s.frameDuration // 1 second for full cycle
+			positionInCycle := elapsed - float64(int(elapsed/cycleTime))*cycleTime
+			frameIndex = int(positionInCycle / s.frameDuration)
+			if frameIndex > 3 {
+				frameIndex = 3
+			}
+		}
+
+		texture := s.pcTextures[frameIndex]
+		x := (windowWidth - texture.Width) / 2
+		y := (windowHeight - texture.Height) / 2
+		rl.DrawTexture(texture, x, y, rl.Color{R: 255, G: 255, B: 255, A: alpha})
 	}
 }
 
