@@ -143,6 +143,7 @@ type ProgrammingScreen struct {
 	backgroundPath string
 	background     rl.Texture2D
 	screenTextures [4]rl.Texture2D
+	typingTextures [4]rl.Texture2D
 	animating      bool
 	frameAnimStart float64
 	frameDuration  float64
@@ -154,6 +155,10 @@ func (s *ProgrammingScreen) Load() {
 	s.screenTextures[1] = rl.LoadTexture("assets/screen/screen1.png")
 	s.screenTextures[2] = rl.LoadTexture("assets/screen/screen2.png")
 	s.screenTextures[3] = rl.LoadTexture("assets/screen/screen3.png")
+	s.typingTextures[0] = rl.LoadTexture("assets/typing/typing0.png")
+	s.typingTextures[1] = rl.LoadTexture("assets/typing/typing1.png")
+	s.typingTextures[2] = rl.LoadTexture("assets/typing/typing2.png")
+	s.typingTextures[3] = rl.LoadTexture("assets/typing/typing3.png")
 	s.animating = false
 	s.frameDuration = 0.25
 }
@@ -162,6 +167,7 @@ func (s *ProgrammingScreen) Unload() {
 	rl.UnloadTexture(s.background)
 	for i := 0; i < 4; i++ {
 		rl.UnloadTexture(s.screenTextures[i])
+		rl.UnloadTexture(s.typingTextures[i])
 	}
 }
 
@@ -191,6 +197,11 @@ func (s *ProgrammingScreen) Draw() {
 		tx := int32(952)
 		ty := int32(150)
 		rl.DrawTexture(texture, tx, ty, rl.White)
+
+		typingTexture := s.typingTextures[frameIndex]
+		ttx := int32(790)
+		tty := int32(700)
+		rl.DrawTexture(typingTexture, ttx, tty, rl.White)
 	}
 }
 
