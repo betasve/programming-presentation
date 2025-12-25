@@ -25,7 +25,7 @@ func main() {
 
 	// Add screens
 	manager.Add(&InitialScreen{backgroundPath: "assets/bg.png"})
-	manager.Add(&BlankScreen{color: rl.DarkGray, label: "Slide 1 - Press Right Arrow or Space"})
+	manager.Add(&ProgrammingScreen{backgroundPath: "assets/programming.png"})
 	manager.Add(&BlankScreen{color: rl.DarkBlue, label: "Slide 2"})
 	manager.Add(&BlankScreen{color: rl.DarkGreen, label: "Slide 3"})
 
@@ -59,15 +59,15 @@ func main() {
 
 // InitialScreen displays a background image.
 type InitialScreen struct {
-	backgroundPath    string
-	background        rl.Texture2D
-	pcTextures        [4]rl.Texture2D
-	showPC            bool
-	animatingPC       bool
-	fadeStart         float64
-	fadeDuration      float64
-	frameAnimStart    float64
-	frameDuration     float64
+	backgroundPath string
+	background     rl.Texture2D
+	pcTextures     [4]rl.Texture2D
+	showPC         bool
+	animatingPC    bool
+	fadeStart      float64
+	fadeDuration   float64
+	frameAnimStart float64
+	frameDuration  float64
 }
 
 func (s *InitialScreen) Load() {
@@ -135,6 +135,62 @@ func (s *InitialScreen) Draw() {
 		x := (windowWidth - texture.Width) / 2
 		y := (windowHeight - texture.Height) / 2
 		rl.DrawTexture(texture, x, y, rl.Color{R: 255, G: 255, B: 255, A: alpha})
+	}
+}
+
+// ProgrammingScreen displays a centered background image at original size.
+type ProgrammingScreen struct {
+	backgroundPath string
+	background     rl.Texture2D
+	screenTextures [4]rl.Texture2D
+	animating      bool
+	frameAnimStart float64
+	frameDuration  float64
+}
+
+func (s *ProgrammingScreen) Load() {
+	s.background = rl.LoadTexture(s.backgroundPath)
+	s.screenTextures[0] = rl.LoadTexture("assets/screen/screen0.png")
+	s.screenTextures[1] = rl.LoadTexture("assets/screen/screen1.png")
+	s.screenTextures[2] = rl.LoadTexture("assets/screen/screen2.png")
+	s.screenTextures[3] = rl.LoadTexture("assets/screen/screen3.png")
+	s.animating = false
+	s.frameDuration = 0.25
+}
+
+func (s *ProgrammingScreen) Unload() {
+	rl.UnloadTexture(s.background)
+	for i := 0; i < 4; i++ {
+		rl.UnloadTexture(s.screenTextures[i])
+	}
+}
+
+func (s *ProgrammingScreen) Update() screen.Screen {
+	if rl.IsKeyPressed(rl.KeyEnter) && !s.animating {
+		s.animating = true
+		s.frameAnimStart = rl.GetTime()
+	}
+	return nil
+}
+
+func (s *ProgrammingScreen) Draw() {
+	x := (windowWidth - int32(s.background.Width)) / 2
+	y := (windowHeight - int32(s.background.Height)) / 2
+	rl.DrawTexture(s.background, x, y, rl.White)
+
+	if s.animating {
+		elapsed := rl.GetTime() - s.frameAnimStart
+		cycleTime := 4 * s.frameDuration
+		positionInCycle := elapsed - float64(int(elapsed/cycleTime))*cycleTime
+		frameIndex := int(positionInCycle / s.frameDuration)
+		if frameIndex > 3 {
+			frameIndex = 3
+		}
+
+		texture := s.screenTextures[frameIndex]
+		tx := int32(952)
+		ty := int32(150)
+		rl.DrawTexture(texture, tx, ty, rl.White)
 	}
 }
 
