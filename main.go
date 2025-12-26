@@ -26,6 +26,7 @@ func main() {
 	// Add screens
 	manager.Add(&InitialScreen{backgroundPath: "assets/bg.png"})
 	manager.Add(&ProgrammingScreen{backgroundPath: "assets/programming.png"})
+	manager.Add(&CardsScreen{backgroundPath: "assets/bg.png"})
 	manager.Add(&BlankScreen{color: rl.DarkBlue, label: "Slide 2"})
 	manager.Add(&BlankScreen{color: rl.DarkGreen, label: "Slide 3"})
 
@@ -202,6 +203,161 @@ func (s *ProgrammingScreen) Draw() {
 		ttx := int32(790)
 		tty := int32(700)
 		rl.DrawTexture(typingTexture, ttx, tty, rl.White)
+	}
+}
+
+// FlipCard represents a card that can be flipped to reveal content.
+type FlipCard struct {
+	x, y        int32
+	flipped     bool
+	questionTex rl.Texture2D
+	flippedTex  rl.Texture2D
+	text        string
+}
+
+const cardSize = 300
+
+func (c *FlipCard) Draw() {
+	var tex rl.Texture2D
+	if c.flipped {
+		tex = c.flippedTex
+	} else {
+		tex = c.questionTex
+	}
+
+	// Draw card image scaled to card size
+	src := rl.Rectangle{X: 0, Y: 0, Width: float32(tex.Width), Height: float32(tex.Height)}
+	dst := rl.Rectangle{X: float32(c.x), Y: float32(c.y), Width: cardSize, Height: cardSize}
+	rl.DrawTexturePro(tex, src, dst, rl.Vector2{X: 0, Y: 0}, 0, rl.White)
+
+	// Draw text below the card
+	textWidth := rl.MeasureText(c.text, 20)
+	textX := c.x + (cardSize-textWidth)/2
+	textY := c.y + cardSize + 10
+	rl.DrawText(c.text, textX, textY, 20, rl.White)
+}
+
+// CardsScreen displays a background image scaled to fill the screen.
+type CardsScreen struct {
+	backgroundPath string
+	background     rl.Texture2D
+	cards          []FlipCard
+}
+
+func (s *CardsScreen) Load() {
+	s.background = rl.LoadTexture(s.backgroundPath)
+
+	questionTex := rl.LoadTexture("assets/devices/q.png")
+
+	row1Y := int32(20)
+	row2Y := row1Y + cardSize + 60
+	row3Y := row2Y + cardSize + 60
+
+	s.cards = []FlipCard{
+		// Row 1
+		{
+			x:           200,
+			y:           row1Y,
+			questionTex: questionTex,
+			flippedTex:  rl.LoadTexture("assets/devices/ac.png"),
+			text:        "1",
+		},
+		{
+			x:           (windowWidth - cardSize) / 2,
+			y:           row1Y,
+			questionTex: questionTex,
+			flippedTex:  rl.LoadTexture("assets/devices/car.png"),
+			text:        "2",
+		},
+		{
+			x:           windowWidth - cardSize - 200,
+			y:           row1Y,
+			questionTex: questionTex,
+			flippedTex:  rl.LoadTexture("assets/devices/elevator.png"),
+			text:        "3",
+		},
+		// Row 2
+		{
+			x:           200,
+			y:           row2Y,
+			questionTex: questionTex,
+			flippedTex:  rl.LoadTexture("assets/devices/escale.png"),
+			text:        "4",
+		},
+		{
+			x:           (windowWidth - cardSize) / 2,
+			y:           row2Y,
+			questionTex: questionTex,
+			flippedTex:  rl.LoadTexture("assets/devices/mw.png"),
+			text:        "5",
+		},
+		{
+			x:           windowWidth - cardSize - 200,
+			y:           row2Y,
+			questionTex: questionTex,
+			flippedTex:  rl.LoadTexture("assets/devices/phone.png"),
+			text:        "6",
+		},
+		// Row 3
+		{
+			x:           200,
+			y:           row3Y,
+			questionTex: questionTex,
+			flippedTex:  rl.LoadTexture("assets/devices/tl.png"),
+			text:        "7",
+		},
+		{
+			x:           (windowWidth - cardSize) / 2,
+			y:           row3Y,
+			questionTex: questionTex,
+			flippedTex:  rl.LoadTexture("assets/devices/tv.png"),
+			text:        "8",
+		},
+		{
+			x:           windowWidth - cardSize - 200,
+			y:           row3Y,
+			questionTex: questionTex,
+			flippedTex:  rl.LoadTexture("assets/devices/wm.png"),
+			text:        "9",
+		},
+	}
+}
+
+func (s *CardsScreen) Unload() {
+	rl.UnloadTexture(s.background)
+	if len(s.cards) > 0 {
+		rl.UnloadTexture(s.cards[0].questionTex)
+	}
+	for i := range s.cards {
+		rl.UnloadTexture(s.cards[i].flippedTex)
+	}
+}
+
+func (s *CardsScreen) Update() screen.Screen {
+	if rl.IsMouseButtonPressed(rl.MouseLeftButton) {
+		mouseX := rl.GetMouseX()
+		mouseY := rl.GetMouseY()
+
+		for i := range s.cards {
+			card := &s.cards[i]
+			if mouseX >= card.x && mouseX <= card.x+cardSize &&
+				mouseY >= card.y && mouseY <= card.y+cardSize {
+				card.flipped = true
+			}
+		}
+	}
+	return nil
+}
+
+func (s *CardsScreen) Draw() {
+	// Scale texture to cover entire screen
+	src := rl.Rectangle{X: 0, Y: 0, Width: float32(s.background.Width), Height: float32(s.background.Height)}
+	dst := rl.Rectangle{X: 0, Y: 0, Width: float32(windowWidth), Height: float32(windowHeight)}
+	rl.DrawTexturePro(s.background, src, dst, rl.Vector2{X: 0, Y: 0}, 0, rl.White)
+
+	// Draw all cards
+	for i := range s.cards {
+		s.cards[i].Draw()
 	}
 }
 
