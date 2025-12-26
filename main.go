@@ -215,7 +215,7 @@ type FlipCard struct {
 	text        string
 }
 
-const cardSize = 300
+const cardSize = 350
 
 func (c *FlipCard) Draw() {
 	var tex rl.Texture2D
@@ -231,10 +231,10 @@ func (c *FlipCard) Draw() {
 	rl.DrawTexturePro(tex, src, dst, rl.Vector2{X: 0, Y: 0}, 0, rl.White)
 
 	// Draw text below the card
-	textWidth := rl.MeasureText(c.text, 20)
+	textWidth := rl.MeasureText(c.text, 14)
 	textX := c.x + (cardSize-textWidth)/2
-	textY := c.y + cardSize + 10
-	rl.DrawText(c.text, textX, textY, 20, rl.White)
+	textY := c.y + cardSize - 40
+	rl.DrawText(c.text, textX, textY, 14, rl.Gray)
 }
 
 // CardsScreen displays a background image scaled to fill the screen.
@@ -249,9 +249,9 @@ func (s *CardsScreen) Load() {
 
 	questionTex := rl.LoadTexture("assets/devices/q.png")
 
-	row1Y := int32(20)
-	row2Y := row1Y + cardSize + 60
-	row3Y := row2Y + cardSize + 60
+	row1Y := int32(0)
+	row2Y := row1Y + cardSize
+	row3Y := row2Y + cardSize
 
 	s.cards = []FlipCard{
 		// Row 1
@@ -260,21 +260,21 @@ func (s *CardsScreen) Load() {
 			y:           row1Y,
 			questionTex: questionTex,
 			flippedTex:  rl.LoadTexture("assets/devices/ac.png"),
-			text:        "1",
+			text:        "AC",
 		},
 		{
 			x:           (windowWidth - cardSize) / 2,
 			y:           row1Y,
 			questionTex: questionTex,
 			flippedTex:  rl.LoadTexture("assets/devices/car.png"),
-			text:        "2",
+			text:        "C",
 		},
 		{
 			x:           windowWidth - cardSize - 200,
 			y:           row1Y,
 			questionTex: questionTex,
 			flippedTex:  rl.LoadTexture("assets/devices/elevator.png"),
-			text:        "3",
+			text:        "E",
 		},
 		// Row 2
 		{
@@ -282,21 +282,21 @@ func (s *CardsScreen) Load() {
 			y:           row2Y,
 			questionTex: questionTex,
 			flippedTex:  rl.LoadTexture("assets/devices/escale.png"),
-			text:        "4",
+			text:        "ES",
 		},
 		{
 			x:           (windowWidth - cardSize) / 2,
 			y:           row2Y,
 			questionTex: questionTex,
 			flippedTex:  rl.LoadTexture("assets/devices/mw.png"),
-			text:        "5",
+			text:        "MW",
 		},
 		{
 			x:           windowWidth - cardSize - 200,
 			y:           row2Y,
 			questionTex: questionTex,
 			flippedTex:  rl.LoadTexture("assets/devices/phone.png"),
-			text:        "6",
+			text:        "P",
 		},
 		// Row 3
 		{
@@ -304,21 +304,21 @@ func (s *CardsScreen) Load() {
 			y:           row3Y,
 			questionTex: questionTex,
 			flippedTex:  rl.LoadTexture("assets/devices/tl.png"),
-			text:        "7",
+			text:        "TL",
 		},
 		{
 			x:           (windowWidth - cardSize) / 2,
 			y:           row3Y,
 			questionTex: questionTex,
 			flippedTex:  rl.LoadTexture("assets/devices/tv.png"),
-			text:        "8",
+			text:        "TV",
 		},
 		{
 			x:           windowWidth - cardSize - 200,
 			y:           row3Y,
 			questionTex: questionTex,
 			flippedTex:  rl.LoadTexture("assets/devices/wm.png"),
-			text:        "9",
+			text:        "WM",
 		},
 	}
 }
