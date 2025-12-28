@@ -27,6 +27,7 @@ func main() {
 	manager.Add(&InitialScreen{backgroundPath: "assets/bg.png"})
 	manager.Add(&ProgrammingScreen{backgroundPath: "assets/programming.png"})
 	manager.Add(&CardsScreen{backgroundPath: "assets/bg.png"})
+	manager.Add(&GameScreen{backgroundPath: "assets/bg.png"})
 	manager.Add(&BlankScreen{color: rl.DarkBlue, label: "Slide 2"})
 	manager.Add(&BlankScreen{color: rl.DarkGreen, label: "Slide 3"})
 
@@ -359,6 +360,117 @@ func (s *CardsScreen) Draw() {
 	for i := range s.cards {
 		s.cards[i].Draw()
 	}
+}
+
+// PlayerState represents the current state of the player.
+type PlayerState int
+
+const (
+	PlayerIdle PlayerState = iota
+	PlayerWalkingDown
+	PlayerWalkingUp
+	PlayerWalkingLeft
+	PlayerWalkingRight
+)
+
+// Animation holds frames for a single animation.
+type Animation struct {
+	frames        []rl.Texture2D
+	frameDuration float64
+}
+
+// Player represents the player character with position, state, and animations.
+type Player struct {
+	x, y           float32
+	state          PlayerState
+	animations     map[PlayerState]*Animation
+	currentFrame   int
+	frameStartTime float64
+}
+
+func (p *Player) SetState(state PlayerState) {
+	if p.state != state {
+		p.state = state
+		p.currentFrame = 0
+		p.frameStartTime = rl.GetTime()
+	}
+}
+
+func (p *Player) Update() {
+	anim, ok := p.animations[p.state]
+	if !ok || len(anim.frames) == 0 {
+		return
+	}
+
+	elapsed := rl.GetTime() - p.frameStartTime
+	if elapsed >= anim.frameDuration {
+		p.currentFrame = (p.currentFrame + 1) % len(anim.frames)
+		p.frameStartTime = rl.GetTime()
+	}
+}
+
+func (p *Player) Draw() {
+	anim, ok := p.animations[p.state]
+	if !ok || len(anim.frames) == 0 {
+		return
+	}
+
+	texture := anim.frames[p.currentFrame]
+	rl.DrawTexture(texture, int32(p.x), int32(p.y), rl.White)
+}
+
+// GameScreen displays a game screen with background.
+type GameScreen struct {
+	backgroundPath string
+	background     rl.Texture2D
+	player         Player
+}
+
+func (s *GameScreen) Load() {
+	s.background = rl.LoadTexture(s.backgroundPath)
+
+	// Load walk down animation frames (0.png through 8.png)
+	walkDownFrames := make([]rl.Texture2D, 9)
+	for i := 0; i < 9; i++ {
+		path := fmt.Sprintf("assets/girl/walk_down/%d.png", i)
+		walkDownFrames[i] = rl.LoadTexture(path)
+	}
+
+	s.player = Player{
+		x:     float32(windowWidth) / 2,
+		y:     float32(windowHeight) / 2,
+		state: PlayerWalkingDown,
+		animations: map[PlayerState]*Animation{
+			PlayerWalkingDown: {
+				frames:        walkDownFrames,
+				frameDuration: 0.1,
+			},
+		},
+		frameStartTime: rl.GetTime(),
+	}
+}
+
+func (s *GameScreen) Unload() {
+	rl.UnloadTexture(s.background)
+	for _, anim := range s.player.animations {
+		for _, frame := range anim.frames {
+			rl.UnloadTexture(frame)
+		}
+	}
+}
+
+func (s *GameScreen) Update() screen.Screen {
+	s.player.Update()
+	return nil
+}
+
+func (s *GameScreen) Draw() {
+	// Scale texture to cover entire screen
+	src := rl.Rectangle{X: 0, Y: 0, Width: float32(s.background.Width), Height: float32(s.background.Height)}
+	dst := rl.Rectangle{X: 0, Y: 0, Width: float32(windowWidth), Height: float32(windowHeight)}
+	rl.DrawTexturePro(s.background, src, dst, rl.Vector2{X: 0, Y: 0}, 0, rl.White)
+
+	s.player.Draw()
 }
 
 // BlankScreen is a simple test screen with a solid color background.
